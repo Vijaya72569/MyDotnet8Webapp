@@ -25,16 +25,13 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Restore dependencies
-        run: dotnet restore WebAppTestAzure.sln
-        working-directory: WebAppTestAzure
+        run: dotnet restore WebAppTestAzure/WebAppTestAzure.sln
 
       - name: Build with dotnet
-        run: dotnet build WebAppTestAzure.sln --configuration Release --no-restore
-        working-directory: WebAppTestAzure
+        run: dotnet build WebAppTestAzure/WebAppTestAzure.sln --configuration Release --no-restore
 
       - name: Publish with dotnet
-        run: dotnet publish WebAppTestAzure.sln --configuration Release --no-build -o "${{env.DOTNET_ROOT}}/myapp"
-        working-directory: WebAppTestAzure
+        run: dotnet publish WebAppTestAzure/WebAppTestAzure.sln --configuration Release --no-build -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -54,6 +51,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: .net-app
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -69,8 +67,7 @@ jobs:
         with:
           app-name: 'mywebapp1919'
           slot-name: 'Production'
-          package: .
+          package: .net-app
 
-          
 
 
