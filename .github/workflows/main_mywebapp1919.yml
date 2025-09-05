@@ -16,27 +16,28 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up .NET 8
+      - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
 
       - name: Restore dependencies
-        run: dotnet restore ./WebAppTestAzure/WebAppTestAzure.csproj
+        run: dotnet restore WebAppTestAzure.sln
 
       - name: Build with dotnet
-        run: dotnet build ./WebAppTestAzure/WebAppTestAzure.csproj --configuration Release --no-restore
+        run: dotnet build WebAppTestAzure.sln --configuration Release --no-restore
 
-      - name: Publish app
-        run: dotnet publish ./WebAppTestAzure/WebAppTestAzure.csproj -c Release -o ./publish --no-build
+      - name: Publish with dotnet
+        run: dotnet publish WebAppTestAzure.sln --configuration Release --no-build -o "${{env.DOTNET_ROOT}}/myapp"
 
-      - name: Upload artifact for deployment
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ./publish
+          path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -54,15 +55,19 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: Deploy to Azure Web App
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'mywebapp1919'
-          slot-name: 'production'
+          slot-name: 'Production'
           package: .
 
+
           
+
